@@ -2,29 +2,36 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    //Room camera
-    [SerializeField] private float speed;
-    private float currentPosX;
+    [Header("Smooth movement")]
+    [SerializeField] private float smoothTime = 0.25f;
+
+    private float targetPosX;
     private Vector3 velocity = Vector3.zero;
 
-    //Follow player
-    [SerializeField] private Transform player;
-    [SerializeField] private float aheadDistance;
-    [SerializeField] private float cameraSpeed;
-    private float lookAhead;
+    private void Start()
+    {
+        // Initialize camera position target
+        targetPosX = transform.position.x;
+    }
 
     private void Update()
     {
-        //Room camera
-        transform.position = Vector3.SmoothDamp(transform.position, new Vector3(currentPosX, transform.position.y, transform.position.z), ref velocity, speed);
-
-        //Follow player
-        //transform.position = new Vector3(player.position.x + lookAhead, transform.position.y, transform.position.z);
-        //lookAhead = Mathf.Lerp(lookAhead, (aheadDistance * player.localScale.x), Time.deltaTime * cameraSpeed);
+        // Move smoothly toward target X position
+        Vector3 targetPosition = new Vector3(targetPosX, transform.position.y, transform.position.z);
+        transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
     }
 
-    public void MoveToNewRoom(Transform _newRoom)
+    // Call this from another script when entering a new room
+    public void MoveToNewRoom(Transform newRoom)
     {
-        currentPosX = _newRoom.position.x;
+        if (newRoom == null)
+        {
+            Debug.LogWarning("CameraController: newRoom is null!");
+            return;
+        }
+
+        targetPosX = newRoom.position.x;
+        Debug.Log($"Camera moving to room: {newRoom.name} (target X = {targetPosX})");
     }
 }
+
